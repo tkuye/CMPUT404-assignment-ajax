@@ -38,7 +38,7 @@ class World:
         self.clear()
         
     def update(self, entity, key, value):
-        entry = self.space.get(entity,dict())
+        entry = self.space.get(entity, dict())
         entry[key] = value
         self.space[entity] = entry
 
@@ -74,27 +74,36 @@ def flask_post_json():
 @app.route("/")
 def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    return flask.send_from_directory('static', 'index.html')
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    return None
+    
+    if request.method == 'POST':
+        myWorld.set(entity, flask_post_json())
+        return myWorld.get(entity)
+    elif request.method == 'PUT':
+        for key, value in flask_post_json().items():
+            myWorld.update(entity, key, value)
+        return myWorld.get(entity)
+
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    return None
+    return myWorld.world()
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    return myWorld.get(entity)
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
-    return None
+    myWorld.clear()
+    return myWorld.world()
 
 if __name__ == "__main__":
     app.run()
